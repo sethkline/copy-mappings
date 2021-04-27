@@ -5,20 +5,20 @@
 </template>
 
 <script>
-import inputs from "./components/inputs";
-import "bulma/css/bulma.min.css";
+import inputs from './components/inputs';
+import 'bulma/css/bulma.min.css';
 
 export default {
-  name: "App",
+  name: 'App',
   components: {
-    inputs,
-  },
+    inputs
+  }
 };
 </script>
 
 <style>
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

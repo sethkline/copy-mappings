@@ -19,8 +19,7 @@
           In Firefox dev tools Right Click POST request Select Edit and Resend
         </li>
         <li>
-          Change the path to have the correct document template should match the
-          number on your GET REQUEST
+          Change the path to have the correct document template should match the number on your GET REQUEST
         </li>
         <li>Delete Request and paste in the one you copied</li>
         <li>click send to send the new request should get back a 200</li>
@@ -48,11 +47,7 @@
         </button>
         <label class="label pb-2">
           final request
-          <textarea
-            ref="finalJson"
-            v-model="finalResults"
-            class="textarea"
-          ></textarea>
+          <textarea ref="finalJson" v-model="finalResults" class="textarea"></textarea>
         </label>
       </div>
       <div>
@@ -71,11 +66,11 @@
 export default {
   data() {
     return {
-      valuesToCopy: "",
-      fieldList: "",
-      path: "",
-      documentTemplateId: "",
-      finalResults: "",
+      valuesToCopy: '',
+      fieldList: '',
+      path: '',
+      documentTemplateId: '',
+      finalResults: ''
     };
   },
   computed: {
@@ -83,20 +78,29 @@ export default {
       if (this.fieldList) {
         return JSON.parse(this.fieldList);
       }
-      return "";
+      return '';
     },
     otherValues() {
       if (this.valuesToCopy) {
         return JSON.parse(this.valuesToCopy);
       }
-      return "";
+      return '';
     },
     newTemplateId() {
-      if (this.fields?.results?.length) {
+      if (this.fields && this.fields.results && this.fields.results.length) {
         return this.fields.results[0].documentTemplateId;
       }
-      return "";
+      return '';
     },
+    valuesDictionary() {
+      if (this.fields && this.fields.results) {
+        return this.fields.results.reduce(
+          (map, obj) => ((map[obj.fieldName] = obj.documentTemplateQuestionId), map),
+          {}
+        );
+      }
+      return null;
+    }
   },
   methods: {
     parseJson() {
@@ -104,36 +108,38 @@ export default {
         return;
       }
 
-      const valuesDictionary = this.fields.results.reduce(
-        (map, obj) => (
-          (map[obj.fieldName] = obj.documentTemplateQuestionId), map
-        ),
-        {}
-      );
+      const finalResults = this.otherValues.request.map(({ fieldName, ...rest }) => {
+        return {
+          ...rest,
+          documentTemplateId: this.newTemplateId,
+          documentTemplateQuestionId: this.valuesDictionary[fieldName],
+          fieldName
+        };
+      });
+      const updatedChildren = this.updateChildren(finalResults);
 
-      const finalResults = this.otherValues.request.map(
-        ({
-          documentTemplateId,
-          documentTemplateQuestionId,
-          fieldName,
-          ...rest
-        }) => {
-          return {
-            documentTemplateId: this.newTemplateId,
-            documentTemplateQuestionId: valuesDictionary[fieldName],
-            fieldName,
-            ...rest,
-          };
-        }
-      );
-
-      this.finalResults = JSON.stringify({ request: finalResults });
+      this.finalResults = JSON.stringify({ request: updatedChildren });
     },
     copyToClipboard() {
       const requestToCopy = this.$refs.finalJson;
       requestToCopy.select();
-      document.execCommand("copy");
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
     },
-  },
+    getKeyByValue(value) {
+      let found = this.otherValues.request.find((field) => field.documentTemplateQuestionId === value);
+      if (found) return this.valuesDictionary[found.fieldName];
+      return null;
+    },
+    updateChildren(mapping) {
+      return mapping.map(({ parentDocumentTemplateQuestionId, ...rest }) => {
+        if (parentDocumentTemplateQuestionId) {
+          const updatedID = this.getKeyByValue(parentDocumentTemplateQuestionId);
+          return { ...rest, parentDocumentTemplateQuestionId: updatedID };
+        }
+        return { ...rest, parentDocumentTemplateQuestionId };
+      });
+    }
+  }
 };
 </script>
