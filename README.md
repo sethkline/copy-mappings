@@ -1,2 +1,2 @@
 # copy-mappings
-Created with CodeSandbox
+Created with CodeSandbox by Seth Kline
